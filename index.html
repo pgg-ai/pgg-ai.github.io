@@ -5,183 +5,204 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PGG AI // INDEV</title>
     <style>
-        :root { 
-            --primary: #f55036; 
-            --bg: #0b0f19; 
-            --card: #161b22; 
-            --text: #e6edf3; 
-            --code-bg: #000000;
-            --neon-green: #44d62c;
-        }
-
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: var(--bg); 
-            color: var(--text); 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            height: 100vh; 
-            overflow: hidden;
-        }
-
-        .app-container { 
-            width: 95%; 
-            max-width: 800px; 
-            display: flex; 
-            flex-direction: column; 
-            padding: 20px; 
-        }
-
+        :root { --primary: #f55036; --bg: #0b0f19; --card: #161b22; --text: #e6edf3; --sidebar-w: 280px; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
         /* Setup Screen */
-        #setup-screen { 
-            text-align: left; 
-            margin-top: 5vh; 
-            padding: 30px; 
-            background: var(--card); 
-            border-radius: 15px; 
-            border: 1px solid #30363d;
-        }
+        #setup-screen { position: fixed; inset: 0; z-index: 999; background: var(--bg); display: flex; align-items: center; justify-content: center; }
+        .setup-card { background: var(--card); padding: 35px; border-radius: 15px; border: 1px solid #30363d; width: 420px; text-align: center; }
+        .warning-box { background: rgba(245, 80, 54, 0.1); border: 1px solid var(--primary); color: var(--text); padding: 15px; border-radius: 8px; font-size: 0.85em; margin-bottom: 20px; text-align: left; line-height: 1.4; }
 
-        .step-box {
-            background: #0d1117;
-            padding: 15px;
-            border-radius: 8px;
-            border-left: 4px solid var(--primary);
-            margin: 20px 0;
-            font-size: 0.9em;
-        }
+        /* Layout */
+        #main-wrapper { display: none; width: 100%; height: 100%; flex-direction: row; }
+        .sidebar { width: var(--sidebar-w); background: #0d1117; border-right: 1px solid #30363d; display: flex; flex-direction: column; padding: 15px; }
+        .chat-list { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        
+        .history-item { display: flex; align-items: center; justify-content: space-between; background: #161b22; padding: 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; font-size: 13px; }
+        .active-chat { border-color: var(--primary) !important; background: #1c2128; }
+        .delete-btn { color: #8b949e; font-size: 18px; padding-left: 10px; transition: 0.2s; }
+        .delete-btn:hover { color: var(--primary); transform: scale(1.2); }
 
-        /* Chat Screen */
-        #chat-screen { display: none; flex-direction: column; height: 95vh; }
-
-        #chat-box { 
-            flex-grow: 1; 
-            overflow-y: auto; 
-            padding: 10px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-        }
-
-        .msg { padding: 14px; border-radius: 10px; line-height: 1.6; max-width: 85%; word-wrap: break-word; }
-        .user { background: var(--primary); align-self: flex-end; color: white; }
-        .ai { background: var(--card); align-self: flex-start; border: 1px solid #30363d; }
-
-        /* Neon Code Boxes */
-        pre { 
-            background: var(--code-bg); color: #f8f8f2; padding: 20px; border-radius: 8px; 
-            overflow-x: auto; position: relative; border: 1px solid var(--neon-green); 
-            margin: 15px 0;
-        }
-        code { font-family: 'Consolas', monospace; }
-        .copy-btn { 
-            position: absolute; right: 10px; top: 10px; background: var(--neon-green); 
-            color: #000; border: none; padding: 5px 12px; border-radius: 4px; 
-            cursor: pointer; font-weight: bold; font-size: 11px;
-        }
-
+        .chat-container { flex-grow: 1; display: flex; flex-direction: column; padding: 20px; }
+        #chat-box { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
+        
+        .msg { padding: 14px; border-radius: 12px; line-height: 1.6; max-width: 80%; word-wrap: break-word; font-size: 15px; }
+        .user { background: var(--primary); align-self: flex-end; color: white; border-bottom-right-radius: 2px; }
+        .ai { background: var(--card); align-self: flex-start; border: 1px solid #30363d; border-bottom-left-radius: 2px; }
+        
         /* Input Area */
-        .input-area { display: flex; gap: 10px; padding: 20px 0; background: var(--bg); }
-        input { flex-grow: 1; padding: 15px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; outline: none; font-size: 1rem; }
-        button.main-btn { background: var(--primary); color: white; border: none; padding: 0 30px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .input-area { display: flex; gap: 10px; padding: 20px 0; border-top: 1px solid #30363d; }
+        input { flex-grow: 1; padding: 14px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; outline: none; }
+        .main-btn { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        select { background: #161b22; color: white; border: 1px solid var(--primary); padding: 8px; border-radius: 6px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="app-container">
     <div id="setup-screen">
-        <h1 style="color:var(--primary); margin:0; text-align:center;">PGG AI</h1>
-        
-        <div class="step-box">
-            <h3 style="margin-top:0">API Key Setup:</h3>
-            <ol style="line-height: 1.6;">
-                <li>Go to <a href="https://console.groq.com/keys" target="_blank" style="color:var(--primary)">console.groq.com/keys</a></li>
-                <li>Create a new API Key</li>
-                <li>Copy the key (starts with <code>gsk_</code>)</li>
-            </ol>
-        </div>
+        <div class="setup-card">
+            <h2 style="color:var(--primary); margin:0;">PGG AI</h2>
+            <p style="color: #8b949e; font-size: 0.85em; margin-bottom: 20px;">PROJECT BY ZWE WINT // PGG STUDIO</p>
+            
+            <div class="warning-box">
+                <b style="color:var(--primary)">⚠️ CRITICAL:</b><br>
+                Write your API key on <b>paper</b> or in a <b>Notepad</b> before copying it. Do not lose it! It is extremely important for accessing the system.
+            </div>
 
-        <input type="password" id="apiKeyInput" placeholder="Paste gsk_ key here..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;">
-        <button class="main-btn" onclick="saveKey()" style="height: 55px; width: 100%;">UNLOCK SYSTEM</button>
+            <div style="text-align: left; font-size: 0.8em; color: #8b949e; margin-bottom: 10px;">
+                1. Get key at <a href="https://console.groq.com/keys" target="_blank" style="color:var(--primary)">Groq Console</a><br>
+                2. Enter your <code>gsk_</code> key below:
+            </div>
+            
+            <input type="password" id="apiKeyInput" placeholder="Paste your key here...">
+            <button class="main-btn" onclick="bootSystem()" style="width: 100%; margin-top: 15px;">BOOT SYSTEM</button>
+        </div>
     </div>
 
-    <div id="chat-screen">
-        <h3 style="color:var(--primary); margin: 0 0 10px 0;">PGG AI // SESSION</h3>
-        <div id="chat-box">
-            <div class="msg ai"><b>PGG AI:</b> System active. How can I assist?</div>
+    <div id="main-wrapper">
+        <div class="sidebar">
+            <button class="main-btn" onclick="createNewChat()">+ NEW CHAT</button>
+            <div id="chat-list" class="chat-list"></div>
         </div>
-        <div class="input-area">
-            <input type="text" id="userInput" placeholder="Type and hit Enter...">
-            <button class="main-btn" onclick="sendMessage()">RUN</button>
+        <div class="chat-container">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom: 1px solid #30363d; padding-bottom:10px;">
+                <h3 style="color:var(--primary); margin:0;">PGG AI // SESSION</h3>
+                <select id="modelSelect" onchange="updateSystemPrompt()">
+                    <option value="meta-llama/llama-4-scout-17b-16e-instruct">PGG-4 Scout</option>
+                    <option value="openai/gpt-oss-120b">PGG-OSS 120B</option>
+                    <option value="llama-3.3-70b-versatile">PGG-3.3 Power</option>
+                    <option value="qwen/qwen3-32b">PGG-Qwen Logic</option>
+                </select>
+            </div>
+            <div id="chat-box"></div>
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Ask PGG AI anything...">
+                <button class="main-btn" onclick="handleSend()">RUN</button>
+            </div>
         </div>
     </div>
-</div>
 
 <script>
     let API_KEY = "";
+    let currentChatId = null;
+    let activeHistory = [];
 
-    function saveKey() {
-        const val = document.getElementById('apiKeyInput').value.trim();
-        if (val.startsWith('gsk_')) {
-            API_KEY = val;
+    function bootSystem() {
+        const key = document.getElementById('apiKeyInput').value.trim();
+        if (key.startsWith('gsk_')) {
+            API_KEY = key;
             document.getElementById('setup-screen').style.display = 'none';
-            document.getElementById('chat-screen').style.display = 'flex';
-        } else { alert("Invalid Key"); }
+            document.getElementById('main-wrapper').style.display = 'flex';
+            refreshSidebar();
+            createNewChat();
+        } else { alert("Key Required: Please enter your gsk_ key to unlock PGG AI."); }
     }
 
-    async function sendMessage() {
+    function getSystemPrompt() {
+        const modelName = document.getElementById('modelSelect').selectedOptions[0].text;
+        return `Your name is PGG AI. You are a product of PGG Studio, developed by Zwe Wint. 
+        You are currently using the ${modelName} engine. 
+        RULE: Do not mention your identity or engine in every response. 
+        Only state your name/creator/model if the user explicitly asks. 
+        Provide direct, helpful answers.`;
+    }
+
+    function updateSystemPrompt() {
+        if (activeHistory.length > 0 && activeHistory[0].role === "system") {
+            activeHistory[0].content = getSystemPrompt();
+        }
+    }
+
+    async function handleSend() {
         const input = document.getElementById('userInput');
-        const box = document.getElementById('chat-box');
         const text = input.value.trim();
         if (!text) return;
 
-        box.innerHTML += `<div class="msg user">${text}</div>`;
+        activeHistory.push({ role: "user", content: text });
         input.value = "";
-        box.scrollTop = box.scrollHeight;
+        renderMessages();
 
         try {
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [
-                        { role: "system", content: "You are PGG AI. You are a custom tool, not Meta." },
-                        { role: "user", content: text }
-                    ]
+                body: JSON.stringify({ 
+                    model: document.getElementById('modelSelect').value, 
+                    messages: activeHistory,
+                    temperature: 0.5 
                 })
             });
-
             const data = await response.json();
             let reply = data.choices[0].message.content;
+            
+            activeHistory.push({ role: "assistant", content: reply });
+            saveCurrentChat();
+            renderMessages();
+        } catch (e) { alert("API Offline. Check Key."); }
+    }
 
-            const formatted = reply.replace(/```([\s\S]*?)```/g, (match, code) => {
-                const clean = code.replace(/^[a-z]+\n/i, ""); 
-                return `<pre><button class="copy-btn" onclick="copyCode(this)">COPY</button><code>${escapeHtml(clean.trim())}</code></pre>`;
-            });
+    function createNewChat() {
+        currentChatId = Date.now();
+        activeHistory = [{ role: "system", content: getSystemPrompt() }];
+        renderMessages();
+        refreshSidebar();
+    }
 
-            box.innerHTML += `<div class="msg ai"><b>PGG AI:</b><br>${formatted}</div>`;
-        } catch (err) {
-            box.innerHTML += `<div class="msg ai" style="color: red;">Connection Error.</div>`;
-        }
+    function saveCurrentChat() {
+        let storage = JSON.parse(localStorage.getItem('pgg_v9') || '{}');
+        const userMsg = activeHistory.find(m => m.role === 'user');
+        storage[currentChatId] = { 
+            title: userMsg ? userMsg.content.slice(0, 25) : "New Session", 
+            history: activeHistory 
+        };
+        localStorage.setItem('pgg_v9', JSON.stringify(storage));
+        refreshSidebar();
+    }
+
+    function loadChat(id) {
+        let storage = JSON.parse(localStorage.getItem('pgg_v9') || '{}');
+        currentChatId = id;
+        activeHistory = storage[id].history;
+        renderMessages();
+        refreshSidebar();
+    }
+
+    function deleteChat(id, e) {
+        e.stopPropagation();
+        let storage = JSON.parse(localStorage.getItem('pgg_v9') || '{}');
+        delete storage[id];
+        localStorage.setItem('pgg_v9', JSON.stringify(storage));
+        if (currentChatId == id) createNewChat();
+        refreshSidebar();
+    }
+
+    function refreshSidebar() {
+        const list = document.getElementById('chat-list');
+        list.innerHTML = "";
+        let storage = JSON.parse(localStorage.getItem('pgg_v9') || '{}');
+        Object.keys(storage).reverse().forEach(id => {
+            const item = document.createElement('div');
+            item.className = `history-item ${id == currentChatId ? 'active-chat' : ''}`;
+            item.innerHTML = `<span onclick="loadChat(${id})" style="flex-grow:1; overflow:hidden;">${storage[id].title}</span>
+                              <span class="delete-btn" onclick="deleteChat(${id}, event)">×</span>`;
+            list.appendChild(item);
+        });
+    }
+
+    function renderMessages() {
+        const box = document.getElementById('chat-box');
+        box.innerHTML = "";
+        activeHistory.forEach(m => {
+            if(m.role === 'system') return;
+            box.innerHTML += `<div class="msg ${m.role === 'user' ? 'user' : 'ai'}">
+                ${m.role === 'assistant' ? '<b style="color:var(--primary); font-size:0.8em;">PGG AI // PGG STUDIO</b><br>' : ''}
+                ${m.content}
+            </div>`;
+        });
         box.scrollTop = box.scrollHeight;
     }
 
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function copyCode(btn) {
-        navigator.clipboard.writeText(btn.nextElementSibling.innerText);
-        btn.innerText = "COPIED";
-        setTimeout(() => { btn.innerText = "COPY"; }, 2000);
-    }
-
-    document.getElementById("userInput").addEventListener("keypress", (e) => { if (e.key === "Enter") sendMessage(); });
+    document.getElementById("userInput").addEventListener("keypress", (e) => { if(e.key === 'Enter') handleSend(); });
 </script>
-
 </body>
 </html>
